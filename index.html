@@ -17,45 +17,19 @@
 
 <section class="videos">
   <h2>Son Videolar</h2>
-  <div class="video-grid" id="video-feed">
-    <!-- Videolar buraya otomatik eklenecek -->
+  <div class="video-grid">
+    <iframe 
+      src="https://www.youtube.com/embed?listType=user_uploads&list=UCwxsT94yU2CgkJv-1Ptqpnw" 
+      frameborder="0" 
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+      allowfullscreen>
+    </iframe>
   </div>
 </section>
 
 <footer>
   <p>© 2026 Mucize Karakedi</p>
 </footer>
-
-<script>
-const feedURL = "https://www.youtube.com/feeds/videos.xml?channel_id=UCwxsT94yU2CgkJv-1Ptqpnw";
-
-async function fetchVideos() {
-  try {
-    const res = await fetch("https://api.allorigins.win/get?url=" + encodeURIComponent(feedURL));
-    const data = await res.json();
-    const parser = new DOMParser();
-    const xml = parser.parseFromString(data.contents, "application/xml");
-    const entries = xml.querySelectorAll("entry");
-    const container = document.getElementById("video-feed");
-
-    entries.forEach((entry, i) => {
-      if (i >= 6) return; // Son 6 videoyu göster, sayıyı istediğin gibi artırabilirsin
-      const videoId = entry.querySelector("yt\\:videoId").textContent;
-      const title = entry.querySelector("title").textContent;
-
-      const iframe = document.createElement("iframe");
-      iframe.src = `https://www.youtube.com/embed/${videoId}`;
-      iframe.title = title;
-      container.appendChild(iframe);
-    });
-
-  } catch (err) {
-    console.error("Videolar çekilirken hata:", err);
-  }
-}
-
-fetchVideos();
-</script>
 
 </body>
 </html>
