@@ -6,32 +6,57 @@
 <title>Mucize Karakedi</title>
 <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
 
 <header>
   <h1>Mucize Karakedi</h1>
-  <p>Miraculous Cat Noir teorileri, analizler ve yeni bölüm içerikleri</p>
+  <p>Miraculous Ladybug teorileri, analizler ve yeni bölüm içerikleri</p>
   <a class="button" href="https://www.youtube.com/channel/UCwxsT94yU2CgkJv-1Ptqpnw" target="_blank">YouTube Kanalı</a>
 </header>
 
 <section class="videos">
   <h2>Son Videolar</h2>
-  <div class="video-grid">
-    <iframe 
-      width="100%" 
-      height="400" 
-      src="https://www.youtube.com/embed/videoseries?list=UUwxsT94yU2CgkJv-1Ptqpnw" 
-      frameborder="0" 
-      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-      allowfullscreen>
-    </iframe>
+  <div class="video-scroll" id="video-feed">
+    <!-- Videolar JS ile yüklenecek -->
   </div>
 </section>
 
 <footer>
   <p>© 2026 Mucize Karakedi</p>
 </footer>
+
+<script>
+const feedURL = "https://www.youtube.com/feeds/videos.xml?channel_id=UCwxsT94yU2CgkJv-1Ptqpnw";
+const videoFeed = document.getElementById("video-feed");
+
+fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(feedURL)}`)
+  .then(res => res.json())
+  .then(data => {
+    const parser = new DOMParser();
+    const xml = parser.parseFromString(data.contents, "application/xml");
+    const entries = xml.querySelectorAll("entry");
+
+    entries.forEach(entry => {
+      const videoId = entry.querySelector("yt\\:videoId").textContent;
+      const title = entry.querySelector("title").textContent;
+      const thumbnail = entry.querySelector("media\\:thumbnail").getAttribute("url");
+
+      // Dikey videoları filtrele (shorts)
+      const img = new Image();
+      img.src = thumbnail;
+      img.onload = () => {
+        if(img.width > img.height){
+          const videoDiv = document.createElement("div");
+          videoDiv.classList.add("video-item");
+          videoDiv.innerHTML = `
+            <iframe src="https://www.youtube.com/embed/${videoId}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen title="${title}"></iframe>
+          `;
+          videoFeed.appendChild(videoDiv);
+        }
+      }
+    });
+  });
+</script>
 
 </body>
 </html>
