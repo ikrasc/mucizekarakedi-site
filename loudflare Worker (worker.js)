@@ -1,0 +1,24 @@
+addEventListener('fetch', event => {
+  event.respondWith(handleRequest(event.request))
+})
+
+const API_KEY = 'AIzaSyACi0bE7w5vWXnwnEGocmpD6ao9dE-Y584';
+const CHANNEL_ID = 'UCwxsT94yU2CgkJv-1Ptqpnw';
+const MAX_RESULTS = 50;
+
+async function handleRequest(request) {
+  const url = `https://www.googleapis.com/youtube/v3/search?key=${API_KEY}&channelId=${CHANNEL_ID}&part=snippet,id&order=date&maxResults=${MAX_RESULTS}`;
+  const res = await fetch(url);
+  const data = await res.json();
+
+  // Sadece yatay videolar
+  const videos = data.items.filter(video => {
+    const thumbnails = video.snippet.thumbnails;
+    if(!thumbnails) return false;
+    return thumbnails.medium.width >= thumbnails.medium.height;
+  });
+
+  return new Response(JSON.stringify(videos), {
+    headers: { 'Content-Type': 'application/json' }
+  });
+}
