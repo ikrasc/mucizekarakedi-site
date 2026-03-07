@@ -1,101 +1,28 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mucize Karakedi</title>
-<style>
-body{
-  margin:0;
-  font-family:Arial, sans-serif;
-  background:#0f0f14;
-  color:white;
-  text-align:center;
-}
-/* Header */
-header{
-  padding:60px 20px;
-  background:linear-gradient(180deg,#7b2cff,#16002c);
-}
-/* Logo */
-.logo{
-  width:280px;
-  max-width:80%;
-  margin:auto;
-  display:block;
-}
-/* Galeri */
-.video-scroll{
-  display:flex;
-  gap:20px;
-  overflow-x:auto;
-  padding:30px 20px;
-  scroll-behavior:smooth;
-}
-.video-scroll::-webkit-scrollbar{
-  height:8px;
-}
-.video-scroll::-webkit-scrollbar-thumb{
-  background:#7b2cff;
-  border-radius:5px;
-}
-.video-item{
-  flex:0 0 340px;
-}
-.video-item iframe{
-  width:100%;
-  height:190px;
-  border:none;
-  border-radius:8px;
-}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mucize Karakedi</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <!-- Logo -->
+  <header>
+    <img src="White.svg" alt="Mucize Karakedi Logo" class="logo">
+  </header>
 
-<header>
-  <img src="White.svg" class="logo" alt="Mucize Karakedi Logo">
-</header>
+  <!-- Son Videolar -->
+  <section id="videos-section">
+    <h2>Son Videolar</h2>
+    <div id="video-container" class="video-slider"></div>
+  </section>
 
-<section>
-<h2>Son Videolar</h2>
-<div class="video-scroll" id="videosContainer">
-  <!-- Videolar JS ile yüklenecek -->
-</div>
-</section>
+  <!-- Telif hakkı -->
+  <footer>
+    <p>© 2026 Mucize Karakedi. Tüm hakları saklıdır.</p>
+  </footer>
 
-<script>
-// ✅ Güvenli API Key ve Kanal ID
-const API_KEY = "AIzaSyDHtHgsLvmQfDNKRxTgbNL_sEnCLML6WKM";
-const CHANNEL_ID = "UCwxsT94yU2CgkJv-1Ptqpnw";
-
-async function loadVideos(){
-  let res = await fetch(
-    `https://www.googleapis.com/youtube/v3/search?key=${API_KEY}` +
-    `&channelId=${CHANNEL_ID}&part=snippet,id&order=date&maxResults=50`
-  );
-  let data = await res.json();
-  const container = document.getElementById("videosContainer");
-
-  data.items.forEach(item => {
-    if(item.id.kind === "youtube#video"){
-      const thumb = item.snippet.thumbnails.high;
-      // Shorts/dikey filtre (yükseklik > genişlik ise atla)
-      if(thumb.width > thumb.height){
-        const vidId = item.id.videoId;
-        const div = document.createElement("div");
-        div.classList.add("video-item");
-        div.innerHTML = `
-          <iframe src="https://www.youtube.com/embed/${vidId}" 
-            title="${item.snippet.title}" allowfullscreen>
-          </iframe>
-        `;
-        container.appendChild(div);
-      }
-    }
-  });
-}
-loadVideos();
-</script>
-
+  <script src="script.js"></script>
 </body>
 </html>
