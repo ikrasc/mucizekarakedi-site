@@ -1,7 +1,5 @@
-// API Key artık GitHub Secret üzerinden gelecek
-// local test için .env veya direkt workflow kullan
-
-const API_KEY = process.env.YOUTUBE_API_KEY; // GitHub Actions secret inject
+// API Key direkt eklendi (geçici test + site çalışması için)
+const API_KEY = "AIzaSyACi0bE7w5vWXnwnEGocmpD6ao9dE-Y584";
 const CHANNEL_ID = "UCwxsT94yU2CgkJv-1Ptqpnw";
 const MAX_RESULTS = 50;
 
