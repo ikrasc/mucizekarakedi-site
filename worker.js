@@ -1,114 +1,125 @@
-const API_KEY = "AIzaSyDF0m00tIPqW5hVkKLOJeOBe96oSbc_SuQ"; // Senin API key
-const CHANNEL_ID = "UCwxsT94yU2CgkJv-1Ptqpnw"; // Senin kanal ID
+const API_KEY = "AIzaSyDF0m00tIPqW5hVkKLOJeOBe96oSbc_SuQ";
+const CHANNEL_ID = "UCwxsT94yU2CgkJv-1Ptqpnw";
+const VIDEOS_PER_PAGE = 10;
 
 addEventListener("fetch", event => {
-  event.respondWith(handleRequest(event.request));
+  event.respondWith(handleRequest(event.request))
 });
 
 async function handleRequest(request) {
-  try {
-    const apiUrl = `https://www.googleapis.com/youtube/v3/search?key=${API_KEY}&channelId=${CHANNEL_ID}&part=snippet,id&order=date&maxResults=10`;
-    const res = await fetch(apiUrl);
-    const data = await res.json();
+  const url = new URL(request.url);
+  const page = parseInt(url.searchParams.get("page") || "1");
+  const startIndex = (page - 1) * VIDEOS_PER_PAGE + 1;
 
-    if (!data.items) {
-      return new Response("Videolar alınamadı.", { status: 500 });
-    }
+  // Fetch videos from YouTube API
+  const apiURL = `https://www.googleapis.com/youtube/v3/search?key=${API_KEY}&channelId=${CHANNEL_ID}&part=snippet,id&order=date&maxResults=${VIDEOS_PER_PAGE}&pageToken=${url.searchParams.get("pageToken") || ""}`;
+  
+  const res = await fetch(apiURL);
+  const data = await res.json();
 
-    let videosHtml = data.items
-      .filter(item => item.id.videoId) // sadece video olanları al
-      .map(item => {
-        const title = item.snippet.title;
-        const videoId = item.id.videoId;
-        const thumb = item.snippet.thumbnails.medium.url;
-        return `
-          <a href="https://www.youtube.com/watch?v=${videoId}" target="_blank" class="video-card">
-            <img src="${thumb}" alt="${title}" />
-            <h3>${title}</h3>
-          </a>
-        `;
-      })
-      .join("");
+  // Filter out shorts and only horizontal videos
+  const videos = (data.items || []).filter(item => {
+    const title = item.snippet.title.toLowerCase();
+    return !title.includes("shorts");
+  });
 
-    const html = `
-      <!DOCTYPE html>
-      <html lang="tr">
-      <head>
-        <meta charset="UTF-8" />
-        <title>Mucize Karakedi Videoları</title>
-        <style>
-          body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            background-color: #f5f5f5;
-          }
-          header {
-            background-color: #7b2cbf;
-            color: white;
-            padding: 1rem;
-            text-align: center;
-            font-size: 2rem;
-          }
-          .logo {
-            max-height: 50px;
-            vertical-align: middle;
-          }
-          main {
-            padding: 2rem;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1.5rem;
-          }
-          .video-card {
-            display: block;
-            background: white;
-            border-radius: 10px;
-            overflow: hidden;
-            text-decoration: none;
-            color: black;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            transition: transform 0.2s, box-shadow 0.2s;
-          }
-          .video-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 15px rgba(0,0,0,0.2);
-          }
-          .video-card img {
-            width: 100%;
-            display: block;
-          }
-          .video-card h3 {
-            padding: 0.5rem;
-            font-size: 1rem;
-          }
-          footer {
-            background-color: #7b2cbf;
-            color: white;
-            text-align: center;
-            padding: 1rem;
-            margin-top: 2rem;
-          }
-        </style>
-      </head>
-      <body>
-        <header>
-          <img src="https://mucizekarakedi.com/logo.png" alt="Logo" class="logo" />
-          En Güncel Videolar
-        </header>
-        <main>
-          ${videosHtml}
-        </main>
-        <footer>
-          © 2026 Mucize Karakedi. Tüm hakları saklıdır.
-        </footer>
-      </body>
-      </html>
-    `;
+  // Pagination token
+  const nextPageToken = data.nextPageToken || null;
+  const prevPageToken = data.prevPageToken || null;
 
-    return new Response(html, {
-      headers: { "Content-Type": "text/html;charset=UTF-8" },
-    });
-  } catch (err) {
-    return new Response("Bir hata oluştu: " + err.message, { status: 500 });
-  }
+  const html = `
+    <!DOCTYPE html>
+    <html lang="tr">
+    <head>
+      <meta charset="UTF-8">
+      <title>Mucize Karakedi - Videolar</title>
+      <link href="https://fonts.googleapis.com/css2?family=Gilroy:wght@400;700&display=swap" rel="stylesheet">
+      <style>
+        body {
+          margin:0;
+          font-family: 'Gilroy', sans-serif;
+          background-color:#1e1e1e;
+          color:#fff;
+        }
+        header {
+          display:flex;
+          align-items:center;
+          padding:10px 20px;
+        }
+        header img {
+          height:50px;
+          margin-right:20px;
+        }
+        header h1 {
+          font-size:24px;
+          color:#fff;
+          margin:0;
+        }
+        .grid {
+          display:grid;
+          grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+          gap:15px;
+          padding:20px;
+        }
+        .video-card {
+          background:#2e2e2e;
+          padding:10px;
+          border-radius:8px;
+          transition: transform 0.2s;
+        }
+        .video-card:hover {
+          transform: scale(1.03);
+        }
+        .video-card a {
+          text-decoration:none;
+          color:#a64ca6; /* mor ton */
+        }
+        .pagination {
+          display:flex;
+          justify-content:center;
+          gap:10px;
+          padding:20px;
+        }
+        .pagination a {
+          padding:8px 12px;
+          background:#4b0082;
+          border-radius:5px;
+          color:#fff;
+          text-decoration:none;
+        }
+        .pagination a.disabled {
+          background:#555;
+          pointer-events:none;
+        }
+      </style>
+    </head>
+    <body>
+      <header>
+        <img src="https://raw.githubusercontent.com/ikrasc/mucize-karakedi-assets/main/logo.png" alt="Logo">
+        <h1>En Güncel Videolar</h1>
+      </header>
+
+      <div class="grid">
+        ${videos.map(v => `
+          <div class="video-card">
+            <a href="https://www.youtube.com/watch?v=${v.id.videoId}" target="_blank">
+              <img src="${v.snippet.thumbnails.medium.url}" style="width:100%; border-radius:6px;">
+              <p>${v.snippet.title}</p>
+            </a>
+          </div>
+        `).join('')}
+      </div>
+
+      <div class="pagination">
+        ${prevPageToken ? `<a href="?pageToken=${prevPageToken}&page=${page-1}">Önceki</a>` : `<a class="disabled">Önceki</a>`}
+        <span style="align-self:center; color:#fff;">${page}</span>
+        ${nextPageToken ? `<a href="?pageToken=${nextPageToken}&page=${page+1}">Sonraki</a>` : `<a class="disabled">Sonraki</a>`}
+      </div>
+    </body>
+    </html>
+  `;
+
+  return new Response(html, {
+    headers: { "content-type": "text/html;charset=UTF-8" }
+  });
 }
